@@ -1,0 +1,10 @@
+term,say_as
+# One row per term the voice says wrongly. Whole words, case-sensitive. Subtitles keep the original.
+# Listen first:  uv run tts.py "The KPI comes from the VLOOKUP."
+KPI,K P I
+KPIs,K P Is
+VLOOKUP,V lookup
+XLOOKUP,X lookup
+SQL,S Q L
+ETL,E T L
+CSV,C S V

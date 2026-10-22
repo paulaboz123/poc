@@ -1,0 +1,11 @@
+data/
+.env
+.venv/
+venv/
+__pycache__/
+cost_log.csv
+eval/results/
+models/
+*.part
+tests/_requests.csv
+.pytest_cache/

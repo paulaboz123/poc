@@ -1,0 +1,6 @@
+id,type,topic,recording,minutes,level,model,run
+1,video,,13,2,beginner,,yes
+2,video,how to join two tables,,2,beginner,,yes
+3,video,merge types and when to use them,,3,intermediate,,yes
+4,lesson,how to join two tables,,5,beginner,,yes
+5,video,how to join two tables,,2,beginner,<Opus 5 id from the e-mail>,no
