@@ -129,7 +129,14 @@ def _request(url: str, payload: dict | None = None, headers: dict | None = None,
             err = f"{type(e).__name__}: {e}"
         else:
             if r.status_code < 400:
-                return r.json()
+                try:
+                    return r.json()
+                except ValueError:   # e.g. an HTML login page or a web UI instead of the API
+                    raise LLMError(
+                        f"{url} answered HTTP {r.status_code} but not with JSON "
+                        f"(content-type: {r.headers.get('content-type', '?')}). The address is probably "
+                        f"not the API, or a login page / proxy answered. Start of the answer: "
+                        f"{' '.join(r.text[:200].split())!r}") from None
             body = r.text[:500]
             if r.status_code not in TRANSIENT_STATUS:
                 raise LLMError(_explain(r.status_code, url, body))
@@ -292,7 +299,8 @@ def _gateway_chat(messages: list[dict], model: str, max_tokens: int, temperature
                 _structured_ok = False
                 payload.pop("response_format")
                 data = _request(_gateway_url("/chat/completions"), payload, _gateway_headers())
-            elif config.GATEWAY_API == "auto" and _route is None and ("HTTP 404" in msg or "HTTP 405" in msg):
+            elif config.GATEWAY_API == "auto" and _route is None and ("HTTP 404" in msg or "HTTP 405" in msg
+                                                                  or "not with JSON" in msg):
                 log.info("OpenAI-style route not available (%s), trying the Anthropic route", msg[:120])
                 try:
                     result = _anthropic_chat(messages, model, max_tokens, temperature)
