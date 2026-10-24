@@ -2,7 +2,7 @@
 
 Remove-Item data\manifest.csv, data\processed, data\index, data\output -Recurse -Force -ErrorAction SilentlyContinue
 uv run inventory.py
-
+Get-ChildItem data\input -Recurse -File | Select-Object -ExpandProperty Name
 ✅ A table with 4 video rows, each with .vtt and OK.
 
 2. Open data\manifest.csv in VS Code. In the include column, change no to yes in the 4 video rows. Save with Ctrl+S.
@@ -10,3 +10,45 @@ uv run inventory.py
 3. Preparation:
 
 uv run pipeline.py --mode easy
+
+--
+Next steps, assuming you pair them by hand (the fastest way):
+
+1. Pairing in data\manifest.csv (open it in VS Code)
+
+For each of the 4 video rows:
+
+transcript_file → paste the name of the matching .vtt. You’ll find it in the transcript_file column of one of the none rows.
+pair_method → manual
+include → yes
+
+The 4 none rows stay include=no. Save with Ctrl+S.
+
+2. Confirm and prepare:
+
+uv run inventory.py
+uv run pipeline.py --mode easy
+
+✅ The 4 videos show the transcript .vtt, and at the end: 4 rows processed, 0 failures.
+
+3. Hide the presenter on the slides (for one video; the video_id is in the first column of manifest.csv):
+
+uv run slides.py --video <video_id> --preview
+
+Open data\processed\<video_id>\crop_preview.jpg and send me a screenshot. I’ll give you exact SLIDE_CROP / SLIDE_MASK values for .env.
+
+4. Sonnet reads the slides (~$0.30):
+
+uv run pipeline.py --mode easy --vision
+
+5. First video:
+
+uv run make_video.py --recording "<part of a video title>" --minutes 2 --plan-only
+
+Read data\output\<folder>\script.md, then:
+
+uv run make_video.py --rerender "data\output\<folder>" --check
+
+Watch lesson_video.mp4.
+
+Send me the result of step 2 and the screenshot from step 3.
