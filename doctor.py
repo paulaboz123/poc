@@ -38,8 +38,10 @@ def main() -> int:
         langs = media.tesseract_languages()
         missing = [lang for lang in config.OCR_LANG.split("+") if lang not in langs]
         report(not missing, "tesseract", f"language pack missing: {missing}")
-    except media.MediaError:
-        report(False, "tesseract", "winget install UB-Mannheim.TesseractOCR, then reopen VS Code")
+    except media.MediaError as e:
+        report(False, f"tesseract ({config.TESSERACT})",
+               f"{str(e)[:200]}\n       Installed already? Find tesseract.exe and put its full path in .env: "
+               f"TESSERACT=C:\\...\\tesseract.exe")
 
     jobs = [("chat", config.CHAT_BACKEND, config.CHAT_MODEL),
             ("vision", config.VISION_BACKEND, config.VISION_MODEL),

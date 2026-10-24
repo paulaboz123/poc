@@ -33,8 +33,14 @@ def _find_tesseract() -> str:
     on_path = shutil.which("tesseract")
     if on_path:
         return on_path
-    win_default = Path(r"C:\Program Files\Tesseract-OCR\tesseract.exe")
-    return str(win_default) if win_default.exists() else "tesseract"
+    # usual Windows install folders: for all users, 32-bit, or only for this user (winget/no admin)
+    local = os.getenv("LOCALAPPDATA", "")
+    for folder in (r"C:\Program Files\Tesseract-OCR", r"C:\Program Files (x86)\Tesseract-OCR",
+                   local and os.path.join(local, "Programs", "Tesseract-OCR"),
+                   local and os.path.join(local, "Tesseract-OCR")):
+        if folder and Path(folder, "tesseract.exe").exists():
+            return str(Path(folder, "tesseract.exe"))
+    return "tesseract"
 
 
 # --- Folders ------------------------------------------------------------------
