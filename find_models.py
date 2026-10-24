@@ -46,10 +46,9 @@ def try_model(model: str) -> tuple[bool, str]:
         raise
     except llm.LLMError as e:
         text = str(e)
-        for code in ("HTTP 400", "HTTP 401", "HTTP 403", "HTTP 404"):
-            if code in text:
-                return False, code
-        return False, text[:120]
+        said = text.split("Server said:")[-1] if "Server said:" in text else text.split(": ", 1)[-1]
+        code = next((c for c in ("HTTP 400", "HTTP 401", "HTTP 403", "HTTP 404") if c in text), "error")
+        return False, f"{code}: {' '.join(said.split())[:110]}"
 
 
 def main() -> int:
@@ -65,9 +64,6 @@ def main() -> int:
         print(f"[{'OK  ' if ok else 'no  '}] {model:55} {reason}")
         if ok:
             working.append(model)
-        elif reason in ("HTTP 401", "HTTP 403") and not working:
-            print("\nThe key itself is rejected: check BIFROST_API_KEY (and BIFROST_AUTH_HEADER) first.")
-            return 1
     if working:
         best = next((m for m in working if "sonnet" in m), working[0])
         print(f"\nWorking ids: {len(working)}. Put this in .env:\nCHAT_MODEL={best}")
@@ -75,7 +71,9 @@ def main() -> int:
         if opus:
             print(f"For comparisons use: --model {opus}")
         return 0
-    print("\nNo id worked. Ask the platform team for the exact model ids (Sonnet, Opus) for settings.json.")
+    print(f"\nNo id worked (key sent as: {config.BIFROST_AUTH_HEADER}, route: {config.GATEWAY_API}).")
+    print("If every line says 401 or 403, try in .env:  BIFROST_AUTH_HEADER=x-bf-vk  (then x-api-key),")
+    print("and GATEWAY_API=anthropic. Otherwise ask the platform team for the exact model ids.")
     return 1
 
 
