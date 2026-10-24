@@ -6,6 +6,9 @@ Scene types (the model picks one per scene in the storyboard):
   slide    an original slide from the recording, shown large, with where it comes from
   bullets  a heading and 2-5 short key points
   steps    a process: numbered boxes connected by arrows (a simple diagram)
+  comparison  2-3 cards side by side (options, before/after)
+  table    a small grid with a header row
+  concept  a key term with its definition and an optional example
 The voice explains; the screen only shows the key points, so the video is not a slide read
 aloud. Text sizes adapt so everything fits. Fonts: Segoe UI on Windows, DejaVu on Linux.
 
@@ -247,6 +250,96 @@ def mask_area(im: Image.Image, spec: str) -> Image.Image:
     return im
 
 
+def draw_comparison(c: Canvas, heading: str, columns: list[dict]) -> None:
+    """Two or three cards side by side, each with a heading and short points."""
+    top = c.heading(heading)
+    n = len(columns)
+    gap = c.px(24)
+    col_w = (c.w - 2 * c.m - (n - 1) * gap) / n
+    pad = c.px(20)
+    avail_h = c.h - top - c.px(96)
+    head_font, head_lines, head_lh = fit(c.d, [col["heading"] for col in columns], col_w - 2 * pad,
+                                         c.px(70) * n, c.sizes(24, 16), True)
+    all_items = [x for col in columns for x in col["items"]]
+    item_font, _, item_lh = fit(c.d, all_items, col_w - 2 * pad - c.px(22), avail_h * n,
+                                c.sizes(24, 14), gap=0.6)
+    wrapped = [[wrap(c.d, x, item_font, col_w - 2 * pad - c.px(22)) for x in col["items"]] for col in columns]
+    head_h = max(len(h) for h in head_lines) * head_lh
+    body_h = max(sum(len(w) for w in col) * item_lh + 0.6 * item_font.size * (len(col) - 1) for col in wrapped)
+    card_h = min(avail_h, pad + head_h + c.px(18) + body_h + pad)
+    y0 = top + max(0, (avail_h - card_h) / 3)
+    r = max(c.px(5), 3)
+    for i, col in enumerate(columns):
+        x0 = c.m + i * (col_w + gap)
+        c.d.rounded_rectangle([x0, y0, x0 + col_w, y0 + card_h], radius=c.px(14), fill=BOX,
+                              outline=BORDER, width=max(c.px(2), 1))
+        c.d.rectangle([x0 + c.px(14), y0, x0 + col_w - c.px(14), y0 + c.px(5)], fill=ACCENT)
+        y = c.text_lines(head_lines[i], x0 + pad, y0 + pad, head_font, head_lh)
+        c.d.line([x0 + pad, y + c.px(6), x0 + col_w - pad, y + c.px(6)], fill=BORDER, width=1)
+        y += c.px(18)
+        for lines in wrapped[i]:
+            cy = y + item_lh / 2
+            c.d.ellipse([x0 + pad, cy - r, x0 + pad + 2 * r, cy + r], fill=ACCENT)
+            y = c.text_lines(lines, x0 + pad + c.px(22), y, item_font, item_lh) + 0.6 * item_font.size
+
+
+def draw_table(c: Canvas, heading: str, header: list[str], rows: list[list[str]]) -> None:
+    """A small grid: tinted header row, rows with thin rules, text wrapped inside each cell."""
+    top = c.heading(heading)
+    n = len(header)
+    width = c.w - 2 * c.m
+    # columns as wide as their longest text needs (each at least 15% of the table)
+    need = [max(len(header[j]), *(len(r[j]) for r in rows)) for j in range(n)]
+    share = [max(x / sum(need), 0.15) for x in need]
+    widths = [width * x / sum(share) for x in share]
+    lefts = [c.m + sum(widths[:j]) for j in range(n)]
+    pad = c.px(14)
+    avail_h = c.h - top - c.px(96)
+    for size in c.sizes(24, 13):
+        body, bold = font(size), font(size, True)
+        lh = int(size * 1.28)
+        head_wrapped = [wrap(c.d, h, bold, widths[j] - 2 * pad) for j, h in enumerate(header)]
+        row_wrapped = [[wrap(c.d, cell, body, widths[j] - 2 * pad) for j, cell in enumerate(r)] for r in rows]
+        head_h = max(len(w) for w in head_wrapped) * lh + 2 * pad
+        row_hs = [max(len(w) for w in r) * lh + 2 * pad for r in row_wrapped]
+        if head_h + sum(row_hs) <= avail_h:
+            break
+    y = top + max(0, (avail_h - head_h - sum(row_hs)) / 3)
+    c.d.rounded_rectangle([c.m, y, c.m + width, y + head_h], radius=c.px(8), fill=ACCENT_LIGHT)
+    for j, lines in enumerate(head_wrapped):
+        c.text_lines(lines, lefts[j] + pad, y + pad, bold, lh)
+    y += head_h
+    for r, h in zip(row_wrapped, row_hs):
+        for j, lines in enumerate(r):
+            c.text_lines(lines, lefts[j] + pad, y + pad, body, lh)
+        y += h
+        c.d.line([c.m, y, c.m + width, y], fill=BORDER, width=1)
+
+
+def draw_concept(c: Canvas, term: str, items: list[str]) -> None:
+    """A key term, large, with its definition and an optional example underneath."""
+    width = c.w - 2 * c.px(140)
+    x = c.px(140)
+    label_f = font(c.px(20), True)
+    t_font, (t_lines,), t_lh = fit(c.d, [term], width, c.px(150), c.sizes(56, 30), True)
+    d_font, (d_lines,), d_lh = fit(c.d, [items[0]], width, c.px(170), c.sizes(32, 18))
+    example = items[1] if len(items) > 1 else ""
+    e_font, (e_lines,), e_lh = (fit(c.d, [example], width - c.px(48), c.px(110), c.sizes(22, 14))
+                                if example else (None, ([],), 0))
+    block = c.px(40) + len(t_lines) * t_lh + c.px(44) + len(d_lines) * d_lh + \
+        (c.px(40) + len(e_lines) * e_lh + c.px(32) if example else 0)
+    y = (c.h - block) / 2 - c.px(10)
+    c.d.text((x, y), "KEY TERM", font=label_f, fill=ACCENT)
+    y = c.text_lines(t_lines, x, y + c.px(40), t_font, t_lh)
+    c.d.rectangle([x, y + c.px(14), x + c.px(120), y + c.px(20)], fill=ACCENT)
+    y = c.text_lines(d_lines, x, y + c.px(44), d_font, d_lh)
+    if example:
+        box_h = len(e_lines) * e_lh + c.px(32)
+        y += c.px(28)
+        c.d.rounded_rectangle([x, y, x + width, y + box_h], radius=c.px(10), fill=ACCENT_LIGHT)
+        c.text_lines(e_lines, x + c.px(24), y + c.px(16), e_font, e_lh, fill=INK)
+
+
 def draw_slide(c: Canvas, image: Path, caption: str) -> None:
     """Original slide, as large as fits, with a soft shadow and its source underneath."""
     top, bottom = c.px(36), c.h - c.px(80)
@@ -278,6 +371,12 @@ def render_scene(scene: dict, out: Path, *, lesson_title: str, goal: str, page: 
         draw_slide(c, slide_image, caption)
     elif kind == "steps":
         draw_steps(c, scene.get("heading", ""), scene.get("items", []))
+    elif kind == "comparison" and len(scene.get("columns", [])) >= 2:
+        draw_comparison(c, scene.get("heading", ""), scene["columns"])
+    elif kind == "table" and scene.get("table_header") and scene.get("table_rows"):
+        draw_table(c, scene.get("heading", ""), scene["table_header"], scene["table_rows"])
+    elif kind == "concept" and scene.get("heading") and scene.get("items"):
+        draw_concept(c, scene["heading"], scene["items"])
     else:
         draw_bullets(c, scene.get("heading", ""), scene.get("items", []))
     if kind != "title":   # slide scenes already have a caption at the bottom
