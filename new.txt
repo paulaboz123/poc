@@ -1,0 +1,12 @@
+1. Clean start and inventory:
+
+Remove-Item data\manifest.csv, data\processed, data\index, data\output -Recurse -Force -ErrorAction SilentlyContinue
+uv run inventory.py
+
+✅ A table with 4 video rows, each with .vtt and OK.
+
+2. Open data\manifest.csv in VS Code. In the include column, change no to yes in the 4 video rows. Save with Ctrl+S.
+
+3. Preparation:
+
+uv run pipeline.py --mode easy
