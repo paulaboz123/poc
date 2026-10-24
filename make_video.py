@@ -51,7 +51,7 @@ log = logging.getLogger("make_video")
 
 # --- 1 + 2: material and storyboard -------------------------------------------------------------
 def plan(topic: str | None, recording: str | None, minutes: float, level: str,
-         model: str | None) -> Path:
+         model: str | None, wishes: str = "") -> Path:
     """Find the material, ask for a storyboard, save it. Returns the output folder."""
     summary_of = ""
     if recording:
@@ -66,8 +66,9 @@ def plan(topic: str | None, recording: str | None, minutes: float, level: str,
     if not segments:
         raise lesson.NotEnoughMaterial("No transcript segments found. Run pipeline.py first.")
     cost_before = llm.spent_this_run()
-    sb = storyboard.make(topic, minutes, level, segments, model=model, summary_of=summary_of)
-    sb["request"] = {"topic": topic, "recording": recording or "", "minutes": minutes, "level": level}
+    sb = storyboard.make(topic, minutes, level, segments, model=model, summary_of=summary_of, wishes=wishes)
+    sb["request"] = {"topic": topic, "recording": recording or "", "minutes": minutes, "level": level,
+                     "wishes": wishes}
     sb["plan_cost_usd_est"] = round(llm.spent_this_run() - cost_before, 4)
     out_dir = config.OUTPUT_DIR / f"{sb['created']}-{store.slugify(topic, 40)}-video-{minutes:g}m"
     storyboard.save(sb, out_dir)
@@ -171,11 +172,11 @@ def produce(out_dir: Path) -> dict:
 
 def make(topic: str | None = None, recording: str | None = None, minutes: float = 2,
          level: str = "beginner", model: str | None = None, plan_only: bool = False,
-         rerender: Path | None = None) -> tuple[Path, dict]:
+         rerender: Path | None = None, wishes: str = "") -> tuple[Path, dict]:
     """The whole flow for one request (or a re-render of an existing folder). Writes info.json
     and returns (output folder, info). Raises on errors; see main() for the readable handling."""
     t_start = time.perf_counter()
-    out_dir = rerender if rerender else plan(topic, recording, minutes, level, model)
+    out_dir = rerender if rerender else plan(topic, recording, minutes, level, model, wishes)
     sb = storyboard.load(out_dir)
     base = {"title": sb["title"], "request": sb.get("request", {}),
             "model": sb.get("model", ""), "model_cost_usd_est": sb.get("plan_cost_usd_est", 0.0)}

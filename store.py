@@ -212,18 +212,28 @@ def all_segments() -> dict[str, dict]:
     return out
 
 
+def available_recordings() -> list[dict]:
+    """Included recordings that have been processed (ready for lessons and videos)."""
+    return [r for r in included_rows() if has_segments(r["video_id"])]
+
+
 def resolve_recordings(ref: str) -> list[str]:
-    """Recordings for a user reference: Excel id ('13'), video_id, or part of the title.
-    Several refs can be given separated by commas: '13,14'."""
-    rows = [r for r in included_rows() if has_segments(r["video_id"])]
+    """Recordings for a user reference: Excel id ('13'), video_id, or part of the title or of
+    the file name (case does not matter). Several refs separated by commas: '13,joining'."""
+    rows = available_recordings()
+    if not rows:
+        raise ValueError("No processed recordings yet: set include=yes in data/manifest.csv and run pipeline.py.")
     found: list[str] = []
     for part in (x.strip() for x in ref.split(",") if x.strip()):
+        low = part.lower()
         match = ([r for r in rows if r.get("catalog_id") == part] or
                  [r for r in rows if r["video_id"] == part] or
-                 [r for r in rows if part.lower() in r.get("title", "").lower()])
+                 [r for r in rows if low in r.get("title", "").lower()] or
+                 [r for r in rows if low in (r.get("video_file") or r.get("transcript_file") or "").lower()])
         if not match:
-            raise ValueError(f"No processed recording matches '{part}'. Use the id from "
-                             f"description.xlsx, the video_id, or part of the title (see data/manifest.csv).")
+            listing = "\n".join(f"  {r.get('catalog_id') or '-':>4}  {r['title']}" for r in rows)
+            raise ValueError(f"No processed recording matches '{part}'. Use the id, or a word from the "
+                             f"title or file name. Available recordings (id, title):\n{listing}")
         found += [r["video_id"] for r in match if r["video_id"] not in found]
     return found
 
