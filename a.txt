@@ -1,0 +1,23 @@
+What was created: the source code of a GenAI proof of concept, “Lesson Studio”, which turns recorded internal training sessions into learning content: answers with sources, text lectures, presentations and narrated video lessons. It covers:
+
+the retrieval and answer pipeline;
+lesson and presentation generators;
+video rendering modules in several engines (HTML, Remotion, Manim, Revideo, Motion Canvas, HyperFrames), each in two original visual styles;
+talking-avatar animation built from the company’s character images;
+a web application with chat history, a tool comparison view and a monthly cost model;
+automated test suites (unit, integration, end-to-end and UI tests) and a CI workflow;
+a technical and business analysis of video and voice tools (quality, licences, costs) and of the deployment options (minimum vs optimal monthly cost).
+
+What makes it original: the solution was designed from scratch for this use case. No existing product covers it end to end. My own decisions shaped:
+
+the architecture and the processing pipeline from recording to video;
+the visual designs and motion of the lessons;
+the lip-sync method that animates an avatar from its own image;
+the comparison and cost methodology;
+the test scenarios.
+
+For whom: Accenture, for the client project (e-learning PoC for the product owner and the client’s training team).
+
+Where stored: the project repository “aiplatform” on the project laptop, versions delivered as dated change packages. Documentation: README.md and NEXT_STEPS.md in the repository.
+
+Identification: project period from 12.10.2026; main modules include app.py (Lesson Studio), compare_video.py, company_avatar.py, remotion/ and tests/.
