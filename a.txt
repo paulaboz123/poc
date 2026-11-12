@@ -1,23 +1,23 @@
-What was created: the source code of a GenAI proof of concept, “Lesson Studio”, which turns recorded internal training sessions into learning content: answers with sources, text lectures, presentations and narrated video lessons. It covers:
+3. Logo i szablon firmy (jeśli już je masz; jeśli nie, pomiń ten krok):
 
-the retrieval and answer pipeline;
-lesson and presentation generators;
-video rendering modules in several engines (HTML, Remotion, Manim, Revideo, Motion Canvas, HyperFrames), each in two original visual styles;
-talking-avatar animation built from the company’s character images;
-a web application with chat history, a tool comparison view and a monthly cost model;
-automated test suites (unit, integration, end-to-end and UI tests) and a CI workflow;
-a technical and business analysis of video and voice tools (quality, licences, costs) and of the deployment options (minimum vs optimal monthly cost).
+powershell
+mkdir data\brand -Force
 
-What makes it original: the solution was designed from scratch for this use case. No existing product covers it end to end. My own decisions shaped:
+Skopiuj do data\brand\ logo jako logo.png i ich szablon .pptx. Sprawdź, co zostało znalezione:
 
-the architecture and the processing pipeline from recording to video;
-the visual designs and motion of the lessons;
-the lip-sync method that animates an avatar from its own image;
-the comparison and cost methodology;
-the test scenarios.
+powershell
+uv run brand.py --preview
 
-For whom: Accenture, for the client project (e-learning PoC for the product owner and the client’s training team).
+Podgląd slajdu zapisze się w data\output\brand_preview.png.
 
-Where stored: the project repository “aiplatform” on the project laptop, versions delivered as dated change packages. Documentation: README.md and NEXT_STEPS.md in the repository.
+4. Filmy 1, 3, 5, 10 i 15 min, każdy na bazie poprzedniego (ok. 1 h, Claude ok. $1–2):
 
-Identification: project period from 12.10.2026; main modules include app.py (Lesson Studio), compare_video.py, company_avatar.py, remotion/ and tests/.
+powershell
+uv run length_costs.py --from 1m
+
+Jeśli coś przerwie, odpal to samo jeszcze raz: zrobione długości się nie powtarzą. Na koniec w terminalu pojawi się tabela kosztów.
+
+5. Strona:
+
+powershell
+uv run app.py
