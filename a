@@ -1,8 +1,6 @@
-Thanks for the Argo CD tip! I’ve set up my repo proto-learning-agent the same way as proto-invoicing: kaniko → ECR with the ID token, image tag pushed to the deploy-dev branch for Argo CD, Helm chart in charts/proto-learning-lessons using the same Bifrost secret and oauth2-proxy login. Code checks and chart lint pass.
-To deploy it I’d need the same infra pieces proto-invoicing has:
+Hi! My repo proto-learning-agent is ready, set up the same way as proto-invoicing. To deploy it, I need:
+1. An ECR repo and CI/CD variables for my project (as for proto-invoicing)
+2. An Argo CD app for proto-learning-agent (branch deploy-dev, path charts/proto-learning-lessons)
+3. Hostname proto-learning-agent.roche.cloud added to the Microsoft login redirect URLs
 
-ECR repo + CI/CD variables (AWS_ECR_APP, AWS_ACCOUNT_ID_DEV) for my project, and my project allowed in the OIDC role used for kaniko
-Argo CD app named proto-learning-agent (branch deploy-dev, path charts/proto-learning-lessons, values values.yaml + values-dev-eks.yaml), in the same namespace as proto-invoicing or a new one
-Hostname proto-learning-agent.roche.cloud, added to the redirect URLs of the Microsoft login used by oauth2-proxy
-
-Could you set these up, or tell me who to ask?
+Could you set this up, or let me know who should?
