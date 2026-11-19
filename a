@@ -1,6 +1,14 @@
 Expand-Archive -Force $HOME\Downloads\changed_files_98.zip .
+Expand-Archive -Force $HOME\Downloads\changed_files_99.zip .
 git rm docs/DOCKER_AWS.md docs/AWS_CALCULATOR.md
-uv run pytest
+uv run pytest tests/test_smoke_and_app.py
 git add -A
-git commit -m "Docs: lean and current"
+git commit -m "Docs cleanup, stable queue test"
+git push
+
+
+Expand-Archive -Force $HOME\Downloads\changed_files_100.zip .
+git rm docs/DOCKER_AWS.md docs/AWS_CALCULATOR.md docs/DESIGN.md docs/CODE_STYLE.md
+git add -A
+git commit -m "Docs: minimal current set"
 git push
