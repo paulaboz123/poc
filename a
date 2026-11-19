@@ -1,33 +1,6 @@
-mkdir experiments, settings
-git mv remotion experiments/remotion
-git mv revideo experiments/revideo
-git mv motion-canvas experiments/motion-canvas
-git mv hyperframes experiments/hyperframes
-git mv pronunciation.csv settings/pronunciation.csv
-git mv cost_assumptions.csv settings/cost_assumptions.csv
-git mv cost_prices.csv settings/cost_prices.csv
-git mv tiers.json settings/tiers.json
-
-2. Wgraj poprawione ścieżki:
-
-powershell
-Expand-Archive -Force $HOME\Downloads\changed_files_97.zip .
-
-3. Usuń śmieci z gita. Pokaż, co leży w głównym folderze:
-
-powershell
-git ls-files | Where-Object { $_ -notmatch "/" }
-
-Wszystko spoza tej listy możesz usunąć (git rm nazwa), np. stare CSV czy skrypty testowe:
-.dockerignore .env.bifrost.example .env.local.example .gitignore .gitlab-ci.yml Dockerfile README.md compose.yaml mypy.ini pytest.ini ruff.toml pyproject.toml uv.lock .python-version + pliki *.py.
-
-Przy plikach .py, których nie jesteś pewna, wklej mi nazwy.
-
-4. Sprawdź i wypchnij:
-
-powershell
+Expand-Archive -Force $HOME\Downloads\changed_files_98.zip .
+git rm docs/DOCKER_AWS.md docs/AWS_CALCULATOR.md
 uv run pytest
-uv run tools/check_deploy.py --release proto-learning-agent
 git add -A
-git commit -m "Tidy repo: experiments/ and settings/"
+git commit -m "Docs: lean and current"
 git push
