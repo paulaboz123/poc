@@ -1,35 +1,33 @@
-2. Zmień nazwę folderu (git przeniesie razem wszystkie twoje poprawki):
+mkdir experiments, settings
+git mv remotion experiments/remotion
+git mv revideo experiments/revideo
+git mv motion-canvas experiments/motion-canvas
+git mv hyperframes experiments/hyperframes
+git mv pronunciation.csv settings/pronunciation.csv
+git mv cost_assumptions.csv settings/cost_assumptions.csv
+git mv cost_prices.csv settings/cost_prices.csv
+git mv tiers.json settings/tiers.json
+
+2. Wgraj poprawione ścieżki:
 
 powershell
-git mv charts/proto-learning-lessons charts/proto-learning-agent
+Expand-Archive -Force $HOME\Downloads\changed_files_97.zip .
 
-3. W charts/proto-learning-agent/Chart.yaml zmień linię name: proto-learning-lessons na:
-
-yaml
-name: proto-learning-agent
-
-4. W .gitlab-ci.yml zrób dwie zamiany przez Ctrl+H → Replace All:
-
-proto-learning-lessons → proto-learning-agent
-AWS_ECR_APP → AWS_ECR_BACKEND
-
-5. Sprawdź i wypchnij:
+3. Usuń śmieci z gita. Pokaż, co leży w głównym folderze:
 
 powershell
-uv run pytest tests/test_deploy.py
+git ls-files | Where-Object { $_ -notmatch "/" }
+
+Wszystko spoza tej listy możesz usunąć (git rm nazwa), np. stare CSV czy skrypty testowe:
+.dockerignore .env.bifrost.example .env.local.example .gitignore .gitlab-ci.yml Dockerfile README.md compose.yaml mypy.ini pytest.ini ruff.toml pyproject.toml uv.lock .python-version + pliki *.py.
+
+Przy plikach .py, których nie jesteś pewna, wklej mi nazwy.
+
+4. Sprawdź i wypchnij:
+
+powershell
+uv run pytest
 uv run tools/check_deploy.py --release proto-learning-agent
 git add -A
-git commit -m "Chart layout as agreed with platform"
+git commit -m "Tidy repo: experiments/ and settings/"
 git push
-
-Po pushu wyślij mu:
-
-Thanks! Here are the details:
-
-Repo: <link do twojego repo>
-Chart: charts/proto-learning-agent, values values.yaml + values-dev-eks.yaml
-Branch for Argo CD: deploy-dev (CI writes the image tag there, like proto-invoicing)
-ECR: just one repo — it’s a single app (one image), so only AWS_ECR_BACKEND is needed, no frontend.
-
-
-git ls-files | Where-Object { $_ -notmatch "/" }
