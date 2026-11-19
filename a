@@ -1,6 +1,4 @@
-Hi! My repo proto-learning-agent is ready, set up the same way as proto-invoicing. To deploy it, I need:
-1. An ECR repo and CI/CD variables for my project (as for proto-invoicing)
-2. An Argo CD app for proto-learning-agent (branch deploy-dev, path charts/proto-learning-lessons)
-3. Hostname proto-learning-agent.roche.cloud added to the Microsoft login redirect URLs
-
-Could you set this up, or let me know who should?
+To get it running I need:
+1. An Argo CD app for proto-learning-agent (branch deploy-dev, path charts/proto-learning-lessons)
+2. Permission for my project to push images to ECR (an ECR repo + CI/CD variables, like proto-invoicing has)
+3. If needed: hostname proto-learning-agent.roche.cloud added to the Microsoft login redirect URLs
